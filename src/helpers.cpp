@@ -84,45 +84,15 @@ then asks which type of button press we want
     }
 
 /*
-Function for intaking
-*/
-	void intakeControl(bool forward, bool backward, double speed) {
-		if (forward) {
-			isIntaking = !isIntaking;
-            return;
-		}
-
-        if (backward) {
-			intake.move(-speed);
-            return;
-		}
-
-        if (isIntaking) {
-            intake.move(speed);
-            return;
-        }
-
-        intake.brake();
-	}
-
-/*
 Function for your lift
 */
 	void liftControl(bool up, bool down, double speed) {
 		if (up) {
-            if (lift.get_position() < 1690) {
 			lift.move_absolute(1700.0, speed);
-            return;
-            }
-            liftRotator.move_absolute(360.0,speed);
             return;
 		}
 
         if (down) {
-            if (liftRotator.get_position() > 10) {
-			liftRotator.move_absolute(0.0, -speed);
-            return;
-            }
             lift.move_absolute(0.0,-speed);
             return;
 		}
@@ -133,14 +103,18 @@ Function for your lift
 /*
 Function for your claw
 */
-	void clawRotatorControl(bool up, bool down, double speed) {
-		if (up) {
+	void clawControl(bool open, bool close, double speed) {
+		if (open) {
 			claw.move_absolute(315.0, speed);
             return;
 		}
 
-        if (down) {
-			claw.move_absolute(0.0, -speed);
+        if (close) {
+			claw.move( -speed);
+			if (claw.get_position() < 0) {
+				claw.tare_position();
+				claw.set_zero_position(0);
+			}
             return;
 		}
 
@@ -148,16 +122,27 @@ Function for your claw
 	}
 
 /*
+Function for your toggle
+*/
+	void toggleControl(bool forward, bool backward, double speed) {
+		if (forward) {
+			toggle.move(speed);
+			return;
+		}
+
+		if (backward) {
+			toggle.move(-speed);
+			return;
+		}
+
+		toggle.brake();
+	}
+/*
 Motor controls
 gives on main area where all motor functions go
 assign controls in main.cpp
 */
 	void motorControls(const struct motorControlOptions& options, const struct motorSpeedOptions& speedOptions) {
-		intakeControl(
-			buttonStatus(options.intakeForward, buttonPressTypes::NEW_PRESS),
-		    buttonStatus(options.intakeBackward),
-			motorVelocity(speedOptions.intakeSpeed)
-		);
 		
 		liftControl(
 			buttonStatus(options.liftUp),
@@ -165,7 +150,7 @@ assign controls in main.cpp
 			motorVelocity(speedOptions.liftSpeed)
 		);
 
-		clawRotatorControl(
+		clawControl(
 			buttonStatus(options.clawUp),
 			buttonStatus(options.clawDown),
 			motorVelocity(speedOptions.clawSpeed)
@@ -173,23 +158,12 @@ assign controls in main.cpp
 	}
 
 /*
-Claw toggle function
-*/
-    void clawStateControl(bool toggle) {
-        if (toggle) {
-            clawLeft.toggle();
-            clawRight.toggle();
-        }
-    }
-/*
 Pneumatic controls
 gives on main area where all pneumatic functions go
 assign controls in main.cpp
 */
 	void pneumaticControls(const struct pneumaticControlOptions& options) {
-        clawStateControl(
-            buttonStatus(options.clawToggle, buttonPressTypes::NEW_PRESS)
-        );
+
 	}
 
 /*
