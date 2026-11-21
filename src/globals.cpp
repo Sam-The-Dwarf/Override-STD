@@ -10,7 +10,7 @@
   //Miscellaneous motors
     pros::Motor intake(15, pros::v5::MotorGears::blue);
     pros::Motor claw(6, pros::v5::MotorGears::green);
-    pros::Motor liftRotator(17,pros::v5::MotorGears::green);
+    pros::Motor toggle(17,pros::v5::MotorGears::green);
     pros::MotorGroup lift({10,-1}, pros::v5::MotorGears::green);
 
   //Drivetrain
